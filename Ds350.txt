@@ -1,0 +1,218 @@
+-- Create database
+CREATE DATABASE `onlinebookstoremanagementsystem_it244_fall2024` ;
+USE `onlinebookstoremanagementsystem_it244_fall2024`;
+
+-- ===============================================
+-- Create tables
+-- ===============================================
+
+-- Category Table
+CREATE TABLE Category_Table (
+    Category_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Category_Name VARCHAR(100) NOT NULL
+);
+
+-- Subcategory Table
+CREATE TABLE Subcategory_Table (
+    Subcategory_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Category_ID INT,
+    Subcategory_Name VARCHAR(100) NOT NULL,
+    FOREIGN KEY (Category_ID) REFERENCES Category_Table(Category_ID)
+);
+
+-- Book Table
+CREATE TABLE Book (
+    ISBN VARCHAR(20) PRIMARY KEY,
+    Title VARCHAR(255) NOT NULL,
+    Author VARCHAR(255) NOT NULL,
+    Genre VARCHAR(100),
+    Publication_Date DATE,
+    Price DECIMAL(10, 2) NOT NULL,
+    Quantity_Available INT NOT NULL,
+    Category_ID INT,
+    Subcategory_ID INT,
+    Description TEXT,
+    Cover_Image VARCHAR(255),
+    FOREIGN KEY (Category_ID) REFERENCES Category_Table(Category_ID),
+    FOREIGN KEY (Subcategory_ID) REFERENCES Subcategory_Table(Subcategory_ID)
+);
+
+-- Customer Table
+CREATE TABLE Customer (
+    Customer_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    Number VARCHAR(20) NOT NULL,
+    Email VARCHAR(100) NOT NULL,
+    Password VARCHAR(255) NOT NULL,
+    Favorites TEXT
+);
+
+-- Review Table
+CREATE TABLE Review (
+    Review_ID INT AUTO_INCREMENT PRIMARY KEY,
+    ISBN VARCHAR(20),
+    Customer_ID INT,
+    Rating INT CHECK (Rating >= 1 AND Rating <= 5),
+    Review_Text TEXT,
+    FOREIGN KEY (ISBN) REFERENCES Book(ISBN),
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+);
+
+-- Order Table
+CREATE TABLE `Order` (
+    Order_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Customer_ID INT,
+    Order_Date DATETIME NOT NULL,
+    Total_Amount DECIMAL(10, 2) NOT NULL,
+    Payment_Status VARCHAR(50),
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID)
+);
+
+-- Order_Books (Junction Table)
+CREATE TABLE Order_Books (
+    Order_ID INT,
+    ISBN VARCHAR(20),
+    Quantity INT NOT NULL,
+    PRIMARY KEY (Order_ID, ISBN),
+    FOREIGN KEY (Order_ID) REFERENCES `Order`(Order_ID),
+    FOREIGN KEY (ISBN) REFERENCES Book(ISBN)
+);
+
+-- ShippingDetails Table
+CREATE TABLE ShippingDetails (
+    Shipping_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Order_ID INT,
+    Address VARCHAR(255) NOT NULL,
+    Status VARCHAR(50),
+    Estimated_Delivery_Date DATE,
+    FOREIGN KEY (Order_ID) REFERENCES `Order`(Order_ID)
+);
+
+CREATE TABLE Wishlist (
+    Customer_ID INT,
+    ISBN VARCHAR(20),
+    PRIMARY KEY (Customer_ID, ISBN),
+    FOREIGN KEY (Customer_ID) REFERENCES Customer(Customer_ID),
+    FOREIGN KEY (ISBN) REFERENCES Book(ISBN)
+);
+
+-- ===============================================
+-- Populate tables and insert 10 rows
+-- ===============================================
+
+-- Populate Category_Table
+INSERT INTO Category_Table (Category_Name) VALUES
+('Fiction'),
+('Non-Fiction'),
+('Science'),
+('History'),
+('Mystery'),
+('Romance'),
+('Fantasy'),
+('Biography'),
+('Self-Help'),
+('Children');
+
+-- Populate Subcategory_Table
+INSERT INTO Subcategory_Table (Category_ID, Subcategory_Name) VALUES
+(1, 'Thriller'),
+(1, 'Drama'),
+(2, 'Health'),
+(2, 'Travel'),
+(3, 'Physics'),
+(3, 'Biology'),
+(4, 'Ancient'),
+(5, 'Detective'),
+(6, 'Love Stories'),
+(7, 'Magic');
+
+-- Populate Book Table
+INSERT INTO Book (ISBN, Title, Author, Genre, Publication_Date, Price, Quantity_Available, Category_ID, Subcategory_ID, Description, Cover_Image) VALUES
+('978-1-23456-789-0', 'The Silent Patient', 'Alex Michaelides', 'Fiction', '2023-02-01', 15.99, 100, 1, 1, 'A psychological thriller', 'Cover1.jpg'),
+('978-1-23456-789-1', 'Becoming', 'Michelle Obama', 'Non-Fiction', '2023-03-01', 20.00, 50, 2, 1, 'A memoir by the former First Lady', 'Cover2.jpg'),
+('978-1-23456-789-2', 'A Brief History of Time', 'Stephen Hawking', 'Science', '2024-01-15', 18.50, 75, 3, 1, 'An exploration of the universe', 'Cover3.jpg'),
+('978-1-23456-789-3', 'The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', '2024-04-10', 10.99, 120, 1, 2, 'A classic novel of the Roaring Twenties', 'Cover4.jpg'),
+('978-1-23456-789-4', 'Educated', 'Tara Westover', 'Non-Fiction', '2023-05-20', 25.00, 90, 2, 2, 'A memoir about family and education', 'Cover5.jpg'),
+('978-1-23456-789-5', 'Harry Potter and the Sorcerer’s Stone', 'J.K. Rowling', 'Fantasy', '2024-05-01', 30.00, 60, 1, 1, 'A young wizard’s journey begins', 'Cover6.jpg'),
+('978-1-23456-789-6', 'The Catcher in the Rye', 'J.D. Salinger', 'Fiction', '2023-06-15', 22.99, 110, 1, 2, 'A story of teenage angst', 'Cover7.jpg'),
+('978-1-23456-789-7', 'Where the Crawdads Sing', 'Delia Owens', 'Fiction', '2023-07-20', 12.99, 95, 1, 1, 'A mystery set in the marshes of North Carolina', 'Cover8.jpg'),
+('978-1-23456-789-8', 'Beartown', 'Fredrik Backman', 'Fiction', '2024-06-05', 14.50, 80, 1, 2, 'A novel about a town obsessed with hockey', 'Cover9.jpg'),
+('978-1-23456-789-9', 'Atomic Habits', 'James Clear', 'Self-Help', '2023-08-30', 21.99, 70, 2, 1, 'An easy & proven way to build good habits', 'Cover10.jpg');
+
+-- Populate Customer Table
+INSERT INTO Customer (Name, Number, Email, Password, Favorites) VALUES
+('Ali Ahmed', 'Number1', 'ali1@example.com', 'Password1', 'Favorite1'),
+('Fatima Al-Mansour', 'Number2', 'fatima2@example.com', 'Password2', 'Favorite2'),
+('Mohammed Khan', 'Number3', 'mohammed3@example.com', 'Password3', 'Favorite3'),
+('Sara Youssef', 'Number4', 'sara4@example.com', 'Password4', 'Favorite4'),
+('Omar Saeed', 'Number5', 'omar5@example.com', 'Password5', 'Favorite5'),
+('Aisha Hussain', 'Number6', 'aisha6@example.com', 'Password6', 'Favorite6'),
+('Hassan Ali', 'Number7', 'hassan7@example.com', 'Password7', 'Favorite7'),
+('Noura Khaled', 'Number8', 'noura8@example.com', 'Password8', 'Favorite8'),
+('Zainab Noor', 'Number9', 'zainab9@example.com', 'Password9', 'Favorite9'),
+('Yusuf Ibrahim', 'Number10', 'yusuf10@example.com', 'Password10', 'Favorite10');
+
+-- Populate Review Table (ensure customers have rated books)
+INSERT INTO Review (ISBN, Customer_ID, Rating, Review_Text) VALUES
+('978-1-23456-789-0', 1, 5, 'An incredible read!'),
+('978-1-23456-789-1', 2, 4, 'Very inspiring.'),
+('978-1-23456-789-2', 3, 5, 'A must-read for science lovers.'),
+('978-1-23456-789-3', 4, 3, 'Good, but not great.'),
+('978-1-23456-789-4', 5, 5, 'Life-changing!'),
+('978-1-23456-789-5', 6, 4, 'Magical and wonderful.'),
+('978-1-23456-789-6', 7, 2, 'Didn’t live up to the hype.'),
+('978-1-23456-789-7', 8, 5, 'Beautifully written.'),
+('978-1-23456-789-8', 9, 4, 'Engaging story.'),
+('978-1-23456-789-9', 10, 3, 'Helpful tips but some were obvious.');
+
+-- Populate Order Table
+INSERT INTO `Order` (Customer_ID, Order_Date, Total_Amount, Payment_Status) VALUES
+(1, '2023-10-01 10:00:00', 29.99, 'Paid'),
+(2, '2023-10-02 11:00:00', 19.99, 'Paid'),
+(3, '2023-10-03 12:00:00', 39.99, 'Unpaid'),
+(1, '2023-10-04 13:00:00', 49.99, 'Paid'), 
+(1, '2023-10-05 14:00:00', 59.99, 'Paid'), 
+(2, '2023-10-06 15:00:00', 69.99, 'Pending'),
+(3, '2023-10-07 16:00:00', 79.99, 'Paid'),
+(4, '2023-10-08 17:00:00', 89.99, 'Unpaid'),
+(5, '2023-10-09 18:00:00', 99.99, 'Paid'),
+(6, '2023-10-10 19:00:00', 9.99, 'Paid');
+
+-- Populate Order_Books (Junction Table)
+INSERT INTO Order_Books (Order_ID, ISBN, Quantity) VALUES
+(1, '978-1-23456-789-0', 1),
+(1, '978-1-23456-789-1', 2),
+(1, '978-1-23456-789-3', 1),
+(1, '978-1-23456-789-5', 1),
+(2, '978-1-23456-789-2', 1),
+(2, '978-1-23456-789-4', 1),
+(3, '978-1-23456-789-6', 1),
+(4, '978-1-23456-789-7', 1),
+(5, '978-1-23456-789-8', 1),
+(6, '978-1-23456-789-9', 1);
+
+-- Populate ShippingDetails Table
+INSERT INTO ShippingDetails (Order_ID, Address, Status, Estimated_Delivery_Date) VALUES
+(1, 'Address1', 'Shipped', '2023-10-01'),
+(2, 'Address2', 'In Transit', '2023-10-02'),
+(3, 'Address3', 'Delivered', '2023-10-03'),
+(4, 'Address4', 'Pending', '2023-10-04'),
+(5, 'Address5', 'Shipped', '2023-10-05'),
+(6, 'Address6', 'In Transit', '2023-10-06'),
+(7, 'Address7', 'Delivered', '2023-10-07'),
+(8, 'Address8', 'Pending', '2023-10-08'),
+(9, 'Address9', 'Shipped', '2023-10-09'),
+(10, 'Address10', 'In Transit', '2023-10-10');
+
+-- Populate Wishlist Table (for customers with wish lists)
+INSERT INTO Wishlist (Customer_ID, ISBN) VALUES 
+(1, '978-1-23456-789-0'),
+(1, '978-1-23456-789-1'),
+(1, '978-1-23456-789-2'),
+(2, '978-1-23456-789-1'),
+(2, '978-1-23456-789-3'),
+(3, '978-1-23456-789-0'),
+(3, '978-1-23456-789-2'),
+(4, '978-1-23456-789-3'),
+(4, '978-1-23456-789-4'),
+(5, '978-1-23456-789-2');
